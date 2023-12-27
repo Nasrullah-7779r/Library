@@ -20,7 +20,7 @@ var migrateCMD = &cobra.Command{
 
 func migrate() {
 
-	database.Set()
+	// database.Set()
 	database.Connect()
-	database.Migration()
+	// database.Migration()
 }

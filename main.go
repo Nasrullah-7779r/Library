@@ -13,7 +13,7 @@ import (
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"library/docs"
-	"library/pkg/auth"
+	"library/pkg/librarian"
 	"library/pkg/student"
 	"log"
 	"net/http"
@@ -30,34 +30,72 @@ func main() {
 	//cmd.Execute()
 	router := gin.Default()
 
+	//router.Use(cors.New(cors.Config{
+	//	AllowOrigins:     []string{"*"}, // You might want to restrict this to specific origins in production
+	//	AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+	//	AllowHeaders:     []string{"Origin", "Authorization", "Content-Type"},
+	//	ExposeHeaders:    []string{"Content-Length"},
+	//	AllowCredentials: true,
+	//	MaxAge:           12 * time.Hour,
+	//}))
+
 	docs.SwaggerInfo.BasePath = "/api/v1"
 	v1 := router.Group("/api/v1")
+	students := v1.Group("/students")
 	{
-		eg := v1.Group("/example")
-		{
-			eg.GET("/helloworld", Helloworld)
-		}
+		students.GET("/")
+
 	}
 
-	//swagger := router.Group("Swagger")
 	{
 		docs.SwaggerInfo.Title = "Library"
 		docs.SwaggerInfo.Description = "Library and Students"
 		docs.SwaggerInfo.Version = "1"
+		docs.SwaggerInfo.Host = "localhost:8000"
+		docs.SwaggerInfo.BasePath = "/"
+		docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	}
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	//	swagger.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	//}
-
-	//router.NoRoute(func(c *gin.Context) {
-	//	c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
-	//})
-
-	//router.POST()
 
 	student.SetupStudentRoutes(router)
-
-	router.POST("/login", auth.LoginHandler)
-
+	librarian.SetupLibrarianRoutes(router)
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	router.Run("localhost:8000")
 }
+
+//package main
+//
+////// @BasePath /api/v1
+////
+////// PingExample godoc
+////// @Summary ping example
+////// @Schemes
+////// @Description do ping
+////// @Tags example
+////// @Accept json
+////// @Produce json
+////// @Success 200 {string} Helloworld
+////// @Router /example/helloworld [get]
+////func Helloworld(g *gin.Context) {
+////	g.JSON(http.StatusOK, "helloworld")
+////}
+////
+////func main() {
+////	r := gin.Default()
+////	docs.SwaggerInfo.BasePath = "/api/v1"
+////	v1 := r.Group("/api/v1")
+////	{
+////		eg := v1.Group("/example")
+////		{
+////			eg.GET("/helloworld", Helloworld)
+////		}
+////	}
+////
+////	{
+////		docs.SwaggerInfo.Title = "Library"
+////		docs.SwaggerInfo.Description = "Library and Students"
+////		docs.SwaggerInfo.Version = "1"
+////	}
+////	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+////	r.Run(":8080")
+////
+////}

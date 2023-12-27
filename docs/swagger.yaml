@@ -1,4 +1,225 @@
+definitions:
+  auth.AccessToken:
+    properties:
+      access_token:
+        type: string
+    type: object
+  common.BorrowRequest:
+    properties:
+      book_author:
+        type: string
+      book_title:
+        type: string
+      borrower_name:
+        type: string
+      request-id:
+        type: string
+      status:
+        $ref: '#/definitions/common.RequestStatus'
+      time:
+        type: string
+    required:
+    - book_author
+    - book_title
+    - borrower_name
+    type: object
+  common.RequestStatus:
+    enum:
+    - pending
+    - in_process
+    - completed
+    type: string
+    x-enum-varnames:
+    - PENDING
+    - IN_PROCESS
+    - COMPLETED
+  common.Student:
+    properties:
+      email:
+        type: string
+      name:
+        description: ID       primitive.ObjectID `json:"id"`
+        type: string
+      password:
+        type: string
+    type: object
+  librarian.book:
+    properties:
+      author:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      is_borrowed:
+        default: false
+        type: boolean
+      title:
+        type: string
+    required:
+    - author
+    - description
+    - id
+    - title
+    type: object
 info:
   contact: {}
-paths: {}
+paths:
+  /all_students:
+    get:
+      description: get all registered students
+      operationId: get-get-all-student-handler
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/common.Student'
+            type: array
+      summary: get all registered students
+      tags:
+      - Student
+  /borrow_book:
+    get:
+      description: BookBorrowHandler
+      operationId: borrow-a-book
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/common.BorrowRequest'
+      summary: put a borrow request to acquire a book
+      tags:
+      - Student
+  /librarian/all_books:
+    get:
+      description: get all books of library
+      operationId: get all books
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/librarian.book'
+            type: array
+      summary: all books
+      tags:
+      - Librarian
+  /librarian/book:
+    get:
+      operationId: get single book
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/librarian.book'
+      summary: get single book
+      tags:
+      - Librarian
+  /librarian/borrow_requests:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/common.BorrowRequest'
+            type: array
+      summary: all books borrow requests
+      tags:
+      - Librarian
+  /librarian/login:
+    post:
+      description: get Librarian logged in
+      operationId: login
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: obj
+      summary: login for Librarian
+      tags:
+      - Auth
+  /librarian/register_book:
+    post:
+      description: Librarian can register new Book
+      operationId: register
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/librarian.book'
+      summary: registration of new Book
+      tags:
+      - Librarian
+  /librarian/token_refresh:
+    post:
+      description: get new access token to access resources, if expired
+      operationId: Librarian refresh-handler
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.AccessToken'
+      summary: refreshToken
+      tags:
+      - Auth
+  /login:
+    post:
+      description: get login to access resources
+      operationId: post-login-handler
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: access_token", "refresh_token
+          schema:
+            type: obj
+      summary: Login for students
+      tags:
+      - Auth
+  /register:
+    post:
+      description: student can get him/herself registered with data
+      operationId: post-register-student-handler
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/common.Student'
+      summary: register new student
+      tags:
+      - Student
+  /token_refresh:
+    post:
+      description: get new access token to access resources, if expired
+      operationId: student refresh-handler
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/auth.AccessToken'
+      summary: refreshToken
+      tags:
+      - Auth
 swagger: "2.0"
