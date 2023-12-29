@@ -1,9 +1,13 @@
 package student
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"library/pkg/auth"
 	"library/pkg/common"
-	"library/pkg/student/std_auth"
 	"net/http"
 )
 
@@ -55,7 +59,7 @@ func allStudentHandler(c *gin.Context) {
 	//accessToken = strings.TrimPrefix(tokenHeader, "Bearer ")
 
 	var cred common.LoginCred
-	if err := c.BindJSON(&cred); err != nil {
+	if err := c.ShouldBindWith(&cred, binding.Form); err != nil {
 
 		c.JSON(http.StatusBadRequest, "Invalid data")
 		return
@@ -68,12 +72,12 @@ func allStudentHandler(c *gin.Context) {
 	//	return
 	//}
 
-	isVerified := std_auth.IsStudentInDB(cred)
-
-	if !isVerified {
-		c.JSON(http.StatusNotFound, "Student not found")
-		return
-	}
+	//isVerified := std_auth.IsStudentInDB(cred)
+	//
+	//if !isVerified {
+	//	c.JSON(http.StatusNotFound, "Student not found")
+	//	return
+	//}
 	students := getAllStudents(c)
 
 	c.JSON(http.StatusOK, students)
@@ -87,15 +91,78 @@ func allStudentHandler(c *gin.Context) {
 // @Success 200 {object} common.BorrowRequest
 // @Tags Student
 // @Router /borrow_book [get]
-func BookBorrowHandler(c *gin.Context) {
+func bookBorrowHandler(c *gin.Context) {
+
+	accessToken, err := auth.GetTokenFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	isVerified, name := auth.VerifyAccessToken(accessToken)
+	if !isVerified {
+		c.JSON(http.StatusUnprocessableEntity, "Invalid token")
+		return
+	}
+
 	var request common.BorrowRequest
 	if err := c.BindJSON(&request); err != nil {
 
 		c.JSON(http.StatusBadRequest, "Invalid request")
 		return
 	}
+	caser := cases.Title(language.English)
+	request.BorrowerName = caser.String(name)
 
 	borrowRequest := borrowAbook(request, c)
 
 	c.JSON(http.StatusCreated, borrowRequest)
+}
+
+func getBorrowedBookHandler(c *gin.Context) {
+	accessToken, err := auth.GetTokenFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	isVerified, name := auth.VerifyAccessToken(accessToken)
+	if !isVerified {
+		c.JSON(http.StatusUnprocessableEntity, "Invalid token")
+		return
+	}
+
+	borrowedBooks := getBorrowedBook(name, c)
+
+	c.JSON(http.StatusOK, borrowedBooks)
+
+}
+
+func returnBookHandler(c *gin.Context) {
+	accessToken, err := auth.GetTokenFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err)
+		return
+	}
+
+	isVerified, _ := auth.VerifyAccessToken(accessToken)
+	if !isVerified {
+		c.JSON(http.StatusUnprocessableEntity, "Invalid token")
+		return
+	}
+	type returnBookData struct {
+		RequestID string `json:"request_id" binding:"required"`
+		BookID    uint   `json:"book_id" binding:"required"`
+	}
+	var returnBookModel returnBookData
+
+	if err = c.BindJSON(&returnBookModel); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+	}
+	fmt.Println("request id: ", returnBookModel.RequestID, "book id:", returnBookModel.BookID)
+
+	returnBook(returnBookModel.RequestID, returnBookModel.BookID, c)
+
+	c.JSON(http.StatusAccepted, map[string]interface{}{"message": "Book has been returned successfully"})
+
 }

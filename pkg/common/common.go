@@ -1,7 +1,5 @@
 package common
 
-import "time"
-
 type Student struct {
 	//ID       primitive.ObjectID `json:"id"`
 	Name     string `json:"name"`
@@ -16,23 +14,24 @@ type StudentOut struct {
 }
 
 type LoginCred struct {
-	Name     string `json:"username" binding:"required" validate:"required"`
-	Password string `json:"password" binding:"required" validate:"required"`
+	Name     string `form:"username" binding:"required" validate:"required"`
+	Password string `form:"password" binding:"required" validate:"required"`
 }
 
 type RequestStatus string
 
 const (
-	PENDING    RequestStatus = "pending"
-	IN_PROCESS RequestStatus = "in_process"
-	COMPLETED  RequestStatus = "completed"
+	PENDING   RequestStatus = "pending"
+	ISSUED    RequestStatus = "issued"
+	COMPLETED RequestStatus = "completed"
 )
 
 type BorrowRequest struct {
-	RequestID    string        `json:"request-id"`
+	RequestID    string        `json:"request_id"`
+	BookID       uint          `json:"book_id"`
 	BookTitle    string        `json:"book_title" binding:"required" validate:"required"`
 	BookAuthor   string        `json:"book_author" binding:"required" validate:"required"`
-	BorrowerName string        `json:"borrower_name" binding:"required" validate:"required"`
+	BorrowerName string        `json:"borrower_name"  validate:"required"`
 	Status       RequestStatus `json:"status"`
-	Time         time.Time     `json:"time"`
+	CreatedAt    string        `json:"created_at"`
 }

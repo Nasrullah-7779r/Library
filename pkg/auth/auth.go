@@ -1,9 +1,12 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"library/pkg/common"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -37,7 +40,7 @@ func GenerateTokens(userCred common.LoginCred) Tokens {
 	return t
 }
 
-func VerifyAccessToken(accessToken string) (bool, common.LoginCred) {
+func VerifyAccessToken(accessToken string) (bool, string) {
 
 	token, err := jwt.Parse(accessToken, func(token *jwt.Token) (interface{}, error) {
 
@@ -50,17 +53,17 @@ func VerifyAccessToken(accessToken string) (bool, common.LoginCred) {
 	if err != nil {
 
 		fmt.Print("Error: ", err)
-		return false, common.LoginCred{}
+		return false, "" //common.LoginCred{}
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok {
 		//fmt.Println(claims["name"], claims["exp"])
-		var cred common.LoginCred
-		cred.Name = claims["name"].(string)
-		return true, cred
+		var name string //common.LoginCred
+		name = claims["name"].(string)
+		return true, name
 	} else {
 		fmt.Println("error:", err)
-		return false, common.LoginCred{}
+		return false, "" //common.LoginCred{}
 	}
 }
 
@@ -111,4 +114,16 @@ func GenerateAccessToken(userCred common.LoginCred) AccessToken {
 	}
 
 	return t
+}
+
+func GetTokenFromRequest(c *gin.Context) (string, error) {
+	var token string
+
+	tokenHeader := c.GetHeader("Authorization")
+
+	token = strings.TrimPrefix(tokenHeader, "Bearer ")
+	if token != "" {
+		return token, nil
+	}
+	return "", errors.New("something wrong with token string")
 }

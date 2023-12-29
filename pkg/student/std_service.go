@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"library/database"
 	"library/pkg/common"
+	"library/pkg/librarian"
 	"math/rand"
 	"net/http"
 	"strconv"
@@ -78,17 +79,32 @@ func borrowAbook(borrowRequest common.BorrowRequest, c *gin.Context) common.Borr
 	database.Connect()
 	db := database.GetDBInstance()
 
+	filter := bson.D{{"Title", borrowRequest.BookTitle}}
+
+	type bookID struct {
+		ID uint `json:"id"`
+	}
+	var resultID bookID
+
+	err := db.Collection("Books").FindOne(context.TODO(), filter).Decode(&resultID)
+	if err != nil {
+		fmt.Println("Error", err)
+		c.JSON(http.StatusPartialContent, fmt.Sprintf("error %v", err))
+		return common.BorrowRequest{}
+	}
+
 	request := bson.D{
 		{"RequestID", strconv.Itoa(rand.Intn(90000) + 10000)},
+		{"BookID", resultID.ID},
 		{"BookTitle", borrowRequest.BookTitle},
 		{"BookAuthor", borrowRequest.BookAuthor},
 		{"BorrowerName", borrowRequest.BorrowerName},
 		{"Status", common.PENDING},
-		{"Time", time.Now()},
+		{"CreatedAt", time.Now().Local().Format(time.DateTime)},
 	}
 
-	result, err := db.Collection("BookBorrowRequests").InsertOne(context.TODO(), request)
-	if err != nil {
+	result, errr := db.Collection("BookBorrowRequests").InsertOne(context.TODO(), request)
+	if errr != nil {
 		c.JSON(http.StatusInternalServerError, "borrow request not submitted")
 		return common.BorrowRequest{}
 	}
@@ -98,14 +114,86 @@ func borrowAbook(borrowRequest common.BorrowRequest, c *gin.Context) common.Borr
 		c.JSON(http.StatusInternalServerError, "failed to get inserted document ID")
 		return common.BorrowRequest{}
 	}
-	fmt.Println("request:", request)
+
 	var insertedBorrowRequest common.BorrowRequest
 
 	err = db.Collection("BookBorrowRequests").FindOne(context.TODO(), bson.M{"_id": insertedID}).Decode(&insertedBorrowRequest)
 	if err != nil {
-		fmt.Println("inserted id:", insertedID)
+
 		c.JSON(http.StatusInternalServerError, "failed to fetch submitted request from the db")
 		return common.BorrowRequest{}
 	}
 	return insertedBorrowRequest
+}
+
+func getBorrowedBook(stdName string, c *gin.Context) []librarian.BorrowedBook {
+
+	database.Connect()
+	db := database.GetDBInstance()
+
+	// to query in case insensitive mode
+	filter := bson.D{{"BorrowerName", primitive.Regex{Pattern: stdName, Options: "i"}}}
+
+	cursor, err := db.Collection("BorrowedBooks").Find(context.TODO(), filter)
+	if err != nil {
+		fmt.Println("Error", err)
+		c.JSON(http.StatusInternalServerError, fmt.Sprintf("error %v", err))
+		return nil
+	}
+
+	var borrowedBooks []librarian.BorrowedBook
+	if err := cursor.All(context.TODO(), &borrowedBooks); err != nil {
+		c.JSON(http.StatusInternalServerError, "Failed to decode borrowed book data")
+		return nil
+	}
+	defer cursor.Close(context.TODO())
+
+	return borrowedBooks
+}
+
+func returnBook(requestID string, bookID uint, c *gin.Context) {
+
+	database.Connect()
+	db := database.GetDBInstance()
+	fmt.Print("request id: ", requestID, "book id:", bookID)
+	// task 1 --> update the request status of Borrow Request in the Book collection
+	req := bson.D{
+		{"RequestID", requestID},
+	}
+
+	update := bson.D{{"$set", bson.D{{"Status", common.COMPLETED}}}}
+
+	_, err := db.Collection("BookBorrowRequests").UpdateOne(context.TODO(), req, update)
+
+	if err != nil {
+
+		c.JSON(http.StatusInternalServerError, "failed to update borrow request status")
+		return
+	}
+
+	// task 2 --> update the book isBorrow status in DB
+	bookToUpdate := bson.D{
+		{"ID", bookID},
+	}
+
+	update = bson.D{{"$set", bson.D{{"IsBorrowed", false}}}}
+
+	_, err = db.Collection("Books").UpdateOne(context.TODO(), bookToUpdate, update)
+
+	if err != nil {
+
+		c.JSON(http.StatusInternalServerError, "failed to update book isBorrow status")
+		return
+	}
+
+	// task 3 --> remove that specific borrowed book which is being returned
+	bookRecordToRemove := bson.D{
+		{"RequestID", requestID},
+	}
+
+	_, err = db.Collection("BorrowedBooks").DeleteOne(context.TODO(), bookRecordToRemove)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+	}
+
 }

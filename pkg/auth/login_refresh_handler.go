@@ -7,7 +7,6 @@ import (
 	"library/pkg/common"
 	"library/pkg/student/std_auth"
 	"net/http"
-	"strings"
 )
 
 // LoginHandler godoc
@@ -22,8 +21,8 @@ func LoginHandler(c *gin.Context) {
 
 	var cred common.LoginCred
 
-	if err := c.ShouldBindWith(&cred, binding.JSON); err != nil {
-
+	if err := c.ShouldBindWith(&cred, binding.Form); err != nil {
+		fmt.Println("cred are", cred)
 		c.JSON(http.StatusUnauthorized, "Invalid credentials")
 		return
 	}
@@ -71,10 +70,15 @@ func RefreshHandler(c *gin.Context) {
 	//
 	//}
 
-	refreshTokenHeader := c.GetHeader("Authorization")
+	//refreshTokenHeader := c.GetHeader("Authorization")
+	//
+	//refreshToken := strings.TrimPrefix(refreshTokenHeader, "Bearer ")
 
-	refreshToken := strings.TrimPrefix(refreshTokenHeader, "Bearer ")
-
+	refreshToken, err := GetTokenFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusUnprocessableEntity, err)
+		return
+	}
 	var user common.LoginCred
 	var isVerified bool
 	isVerified, user = VerifyRefreshToken(refreshToken)

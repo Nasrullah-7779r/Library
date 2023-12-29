@@ -24,6 +24,8 @@ func SetupStudentRoutes(router *gin.Engine) {
 	studentGroup.POST("/register", registerStudentHandler)
 	studentGroup.GET("/all_students", allStudentHandler)
 	studentGroup.GET("/all_books", librarian.AllBooksHandler)
-	studentGroup.POST("/borrow_book", BookBorrowHandler)
+	studentGroup.POST("/borrow_book", bookBorrowHandler)
+	studentGroup.GET("/get_borrowed_books", getBorrowedBookHandler)
+	studentGroup.POST("/return_book", returnBookHandler)
 
 }

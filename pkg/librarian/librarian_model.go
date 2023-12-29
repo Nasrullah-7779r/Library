@@ -19,3 +19,17 @@ type bookStatus struct {
 	Title  string `json:"title" binding:"required"`
 	Author string `json:"author" binding:"required"`
 }
+
+type borrowAcceptanceRequest struct {
+	RequestID string `json:"request_id" binding:"required"`
+	BookTitle string `json:"book_title" binding:"required"`
+}
+
+type BorrowedBook struct {
+	RequestID    string `json:"request_id"`
+	ID           uint   `json:"id"`
+	Title        string `json:"title"`
+	Author       string `json:"author"`
+	BorrowerName string `json:"borrower_name"`
+	IssuedAt     string `json:"issued_at"`
+}

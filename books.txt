@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "title": "The Catcher in the Rye",
+    "description": "A classic novel about the experiences of a young man in New York City.",
+    "author": "J.D. Salinger"
+  },
+  {
+    "id": 2,
+    "title": "To Kill a Mockingbird",
+    "description": "A Pulitzer Prize-winning novel set in the American South during the 1930s.",
+    "author": "Harper Lee"
+  },
+  {
+    "id": 3,
+    "title": "1984",
+    "description": "A dystopian novel that explores the dangers of totalitarianism and government surveillance.",
+    "author": "George Orwell"
+  },
+  {
+    "id": 4,
+    "title": "The Great Gatsby",
+    "description": "A story of the American Dream set in the Roaring Twenties.",
+    "author": "F. Scott Fitzgerald"
+  },
+  {
+    "id": 5,
+    "title": "Harry Potter and the Sorcerer's Stone",
+    "description": "The first book in the Harry Potter series, introducing the magical world of Hogwarts.",
+    "author": "J.K. Rowling"
+  }
+
+  {
+    "id": 6,
+    "title": "The 7 Habits of Highly Effective People",
+    "description": "A classic on personal and professional effectiveness.",
+    "author": "Stephen R. Covey"
+  },
+  {
+    "id": 7,
+    "title": "Atomic Habits",
+    "description": "An insightful book on the power of tiny changes for remarkable results.",
+    "author": "James Clear"
+  },
+  {
+    "id": 8,
+    "title": "Mindset: The New Psychology of Success",
+    "description": "Explores the concept of fixed vs. growth mindsets and their impact on achievement.",
+    "author": "Carol S. Dweck"
+  },
+  {
+    "id": 9,
+    "title": "The Power of Now",
+    "description": "A spiritual guide to living in the present moment and finding fulfillment.",
+    "author": "Eckhart Tolle"
+  },
+  {
+    "id": 10,
+    "title": "Daring Greatly",
+    "description": "Encourages vulnerability and embracing imperfections for a wholehearted life.",
+    "author": "Brené Brown"
+  }
+
+
+]

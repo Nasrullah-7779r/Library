@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"library/database"
@@ -17,9 +18,10 @@ func IsStudentInDB(userCred common.LoginCred) bool {
 	db := database.GetDBInstance()
 
 	std := bson.D{
-		{"Name", userCred.Name},
+		// to perform case-insensitive search for name
+		{"Name", bson.D{{"$regex", primitive.Regex{Pattern: userCred.Name, Options: "i"}}}},
 	}
-	fmt.Println("name", userCred.Name)
+
 	result := db.Collection("Students").FindOne(context.TODO(), std)
 	if result.Err() == mongo.ErrNoDocuments {
 		fmt.Println("after no document")
