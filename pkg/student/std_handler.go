@@ -161,8 +161,8 @@ func returnBookHandler(c *gin.Context) {
 	}
 	fmt.Println("request id: ", returnBookModel.RequestID, "book id:", returnBookModel.BookID)
 
-	returnBook(returnBookModel.RequestID, returnBookModel.BookID, c)
+	result := returnBook(returnBookModel.RequestID, returnBookModel.BookID, c)
 
-	c.JSON(http.StatusAccepted, map[string]interface{}{"message": "Book has been returned successfully"})
+	c.JSON(http.StatusAccepted, map[string]string{"message": result})
 
 }

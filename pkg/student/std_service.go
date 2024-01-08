@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 	"library/database"
 	"library/pkg/common"
@@ -151,7 +152,7 @@ func getBorrowedBook(stdName string, c *gin.Context) []librarian.BorrowedBook {
 	return borrowedBooks
 }
 
-func returnBook(requestID string, bookID uint, c *gin.Context) {
+func returnBook(requestID string, bookID uint, c *gin.Context) string {
 
 	database.Connect()
 	db := database.GetDBInstance()
@@ -162,13 +163,23 @@ func returnBook(requestID string, bookID uint, c *gin.Context) {
 	}
 
 	update := bson.D{{"$set", bson.D{{"Status", common.COMPLETED}}}}
-
-	_, err := db.Collection("BookBorrowRequests").UpdateOne(context.TODO(), req, update)
+	var uResult *mongo.UpdateResult
+	uResult, err := db.Collection("BookBorrowRequests").UpdateOne(context.TODO(), req, update)
 
 	if err != nil {
 
-		c.JSON(http.StatusInternalServerError, "failed to update borrow request status")
-		return
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return "failed to update borrow request status"
+	}
+
+	if uResult.MatchedCount == 0 {
+		c.AbortWithStatus(http.StatusNotFound)
+		return "borrow request not found"
+	}
+
+	if uResult.MatchedCount > 0 && uResult.ModifiedCount == 0 {
+		c.AbortWithStatus(http.StatusOK) // or http.StatusNoContent depending on your needs
+		return "borrow request is already completed"
 	}
 
 	// task 2 --> update the book isBorrow status in DB
@@ -182,8 +193,8 @@ func returnBook(requestID string, bookID uint, c *gin.Context) {
 
 	if err != nil {
 
-		c.JSON(http.StatusInternalServerError, "failed to update book isBorrow status")
-		return
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return "failed to update book isBorrow status"
 	}
 
 	// task 3 --> remove that specific borrowed book which is being returned
@@ -195,5 +206,5 @@ func returnBook(requestID string, bookID uint, c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 	}
-
+	return "Book has been returned successfully"
 }
