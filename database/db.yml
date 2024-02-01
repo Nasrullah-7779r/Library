@@ -1,9 +1,0 @@
-#db:
-#  host: "localhost"
-#  user: "postgres"
-#  password: "pass1234"
-#  dbname: "postgres"
-#  port: "5432"
-
-db:
-  URI: "mongodb+srv://Nasrullah:pass1234@mycluster.9g8gat6.mongodb.net/"
