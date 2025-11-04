@@ -36,7 +36,6 @@ func GenerateTokens(userCred common.LoginCred) Tokens {
 	t.RefreshToken, err[1] = refToken.SignedString(secretKeyRefreshToken)
 	if err[0] != nil && err[1] != nil {
 		fmt.Errorf("tokens didn't get signed        %v", err)
-		fmt.Errorf("tokens didn't get signed        %v", err)
 
 		return Tokens{}
 	}
