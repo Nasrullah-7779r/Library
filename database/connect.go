@@ -36,7 +36,7 @@ func Connect() {
 	//if err != nil {
 	//	log.Fatal("Cannot connect to the Database")
 	//	return
-	//} //
+	//}
 	//
 	//gormDB = dbSession
 }
