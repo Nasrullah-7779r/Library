@@ -2,10 +2,11 @@ package database
 
 import (
 	"context"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"os"
+
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 //var DB *mongo.Database
@@ -35,7 +36,7 @@ func Connect() {
 	//if err != nil {
 	//	log.Fatal("Cannot connect to the Database")
 	//	return
-	//}
+	//} //
 	//
 	//gormDB = dbSession
 }
