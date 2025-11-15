@@ -67,11 +67,11 @@ func Connect() {
 		log.Fatal("MongoDB connection error:", err)
 	}
 
-	dbInstance = client.Database("library")
+	// dbInstance = client.Database("library")
 
 	//fmt.Println("host is", db.Host)
 	//connConfig := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s", db.Host, db.User, db.Password, db.Dbname, db.Port)
-	//
+
 	//dbSession, err := gorm.Open(postgres.Open(connConfig), &gorm.Config{})
 	//
 	//if err != nil {
